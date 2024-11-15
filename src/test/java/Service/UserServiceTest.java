@@ -16,7 +16,7 @@ public class UserServiceTest {
 
 
     @Test
-    @DisplayName("Test create user method returns user object.")
+    @DisplayName("User object created")
     void testCreateUser_whenUserDetailsProvided_returnsUserObject() {
         //arrange
         UserService userService = new UserServiceImpl(); //you cannot create instance of an interface (maybe a class that implements that interface )
@@ -32,22 +32,9 @@ public class UserServiceTest {
 
         //assert
         assertNotNull(user,"The CreateUser() method should not have returned null");
+        assertEquals(firstName, user.getFirstName(), "The createUser() method should return correct firstname.");
+        assertEquals(lastName, user.getLastName(), "The creteUse() method should return correct lastname");
+        assertEquals(email, user.getEmail(), "The creteUse() method should return correct email");
     }
 
-    @Test
-    @DisplayName("Test create user method returns valid firstname.")
-    void testCreateUser_whenUserIsCreated_returnedUserObjectContainsSameFirstName() {
-        //arrange
-        UserService userService = new UserServiceImpl(); //you cannot create instance of an interface (maybe a class that implements that interface )
-        //prepare user details then pass it to the createUser method ( update the method accordingly)
-        String firstName = "Nickson";
-        String lastName = "Brown";
-        String email = "nickson.brown@gmail.com";
-        String password = "nickson";
-        String repeatPassword = "nickson";
-        //act
-        User user = userService.createUser(firstName, lastName, email , password , repeatPassword);
-        //assert
-        assertEquals(firstName, user.getFirstName(), "The createUser() method should return correct firstname.");
-    }
 }

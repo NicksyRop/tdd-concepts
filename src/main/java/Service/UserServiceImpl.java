@@ -13,6 +13,6 @@ public class UserServiceImpl implements UserService {
                            String lastName, String email,
                            String password, String repeatPassword) {
 
-        return new User(firstName);
+        return new User(firstName, lastName, email);
     }
 }
