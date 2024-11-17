@@ -1,6 +1,9 @@
 package Service;
 
 import model.User;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.UUID;
 
 /**
  * @author nnkipkorir
@@ -13,6 +16,10 @@ public class UserServiceImpl implements UserService {
                            String lastName, String email,
                            String password, String repeatPassword) {
 
-        return new User(firstName, lastName, email);
+        if(StringUtils.isBlank(firstName)){
+            throw new IllegalArgumentException("FirstName cannot be blank");
+        }
+
+        return new User(firstName, lastName, email, UUID.randomUUID().toString());
     }
 }
