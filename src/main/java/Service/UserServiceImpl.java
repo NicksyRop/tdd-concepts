@@ -25,6 +25,8 @@ public class UserServiceImpl implements UserService {
         if(StringUtils.isBlank(lastName)){
             throw new IllegalArgumentException(empty_last_name);
         }
-        return new User(firstName, lastName, email, UUID.randomUUID().toString());
+        User user = new User(firstName, lastName, email, UUID.randomUUID().toString());
+        userRepository.save(user);
+        return user;
     }
 }
