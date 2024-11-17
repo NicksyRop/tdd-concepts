@@ -1,5 +1,8 @@
 package Service;
 
+import data.UserRepository;
+import data.UserRepositoryImpl;
+import exception.UserServiceException;
 import model.User;
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,6 +17,14 @@ import static Utility.Constants.empty_last_name;
  */
 
 public class UserServiceImpl implements UserService {
+    UserRepository userRepository;
+
+    //this way when creating a new instance of UserServiceImpl any object as long as it implements the UserRepository
+    //and we will use mockito to create an mock object that implement this interface
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     @Override
     public User createUser(String firstName,
                            String lastName, String email,
@@ -26,7 +37,11 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException(empty_last_name);
         }
         User user = new User(firstName, lastName, email, UUID.randomUUID().toString());
-        userRepository.save(user);
+       // UserRepository userRepository = new UserRepositoryImpl(); //todo : use constructor injection instead of creating objets
+        boolean isUserCreated = userRepository.save(user);
+        if(!isUserCreated){
+            throw new UserServiceException("Could not create user");
+        }
         return user;
     }
 }
