@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static Utility.Constants.empty_first_name;
 import static Utility.Constants.empty_last_name;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author nnkipkorir
@@ -52,7 +53,7 @@ public class UserServiceTest {
     @DisplayName("User object created")
     void testCreateUser_whenUserDetailsProvided_returnsUserObject() {
         //arrange
-        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(true); //save method requires a parameter, we are not calling a real save method so what we pass does not really matter
+        when(userRepository.save(any(User.class))).thenReturn(true); //save method requires a parameter, we are not calling a real save method so what we pass does not really matter
                                                                 // hence we stab the data using mockito arguments matcher Mockito.any(Class)
         //act
         User user = userService.createUser(firstName, lastName, email , password , repeatPassword);  // create the test method in the UserService so as to continue
@@ -62,6 +63,10 @@ public class UserServiceTest {
         assertEquals(lastName, user.getLastName(), "The creteUse() method should return correct lastname");
         assertEquals(email, user.getEmail(), "The creteUse() method should return correct email");
         assertNotNull(user.getId(), "User id should not be null");
+        //todo- ensure we call the save method only once - if twice test should fail
+        //todo - takes in mock object and the desired number of expected invocation times  , then the method we calling i.e save() which accepts
+        //todo - user object, hence we use mockito args passer - Mockito.any(User.class)
+        verify(userRepository, Mockito.times(1)).save(any(User.class));
     }
 
     @Test
@@ -72,7 +77,7 @@ public class UserServiceTest {
         //act and Assert
         Assertions.assertThrows(IllegalArgumentException.class, () -> userService.createUser(firstName, lastName, email , password , repeatPassword),
                 "Empty first name should throw Illegal Argument Exception");
-        //to also check if the correct message is thrown we assing the above method to a var
+        //to also check if the correct message is thrown we passing the above method to a var
 
         IllegalArgumentException illegalArgumentException = Assertions.assertThrows(IllegalArgumentException.class,
                 () -> userService.createUser(firstName, lastName, email, password, repeatPassword),
