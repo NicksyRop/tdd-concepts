@@ -1,6 +1,8 @@
 package Service;
 
 import data.UserRepository;
+import exception.EmailNotificationException;
+import exception.UserServiceException;
 import model.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,9 +32,14 @@ public class UserServiceTest {
     //todo: to make mockito inject mocks for us we will need to use the service and not the interface nd use @InjectMocks annotation
     @InjectMocks
     UserServiceImpl userService;
+
+
+    //todo : tell mockito what to do when we invoke methods in this interface
     @Mock
     UserRepository userRepository;
-    //todo : tell mockito what to do when we invoke methods in this interface
+    @Mock
+    EmailVerificationServiceImpl emailVerificationService;
+
     String firstName;
     String lastName;
     String email;
@@ -96,5 +103,52 @@ public class UserServiceTest {
         ), "Empty last name should throw valid exception");
 
         assertEquals(empty_last_name, illegalArgumentException.getMessage(), "Missing last name should throw a valid message");
+    }
+
+    @Test
+    @DisplayName("if the save() method causes runtime exception,a userServiceException is thrown")
+    void testCreateUser_whenSaveMethodThrowsException_thenThrowUserServiceException() {
+        //arrange //todo - mock object exception stubbing
+        when(userRepository.save(any(User.class))).thenThrow(RuntimeException.class); //configure the save method to  throw RuntimeException exception when called
+        //act
+        //assert
+        assertThrows(UserServiceException.class, () -> userService.createUser(firstName, lastName, email, password, repeatPassword),
+                "Should have thrown UserServiceException instead");
+    }
+
+    @Test
+    @DisplayName("Email notification exception is handled")
+    void testCreateUser_whenEmailNotificationExceptionThrown_thenThrowUserServiceException() {
+        //in the service class the save method either returns true or false -  isUserCreated = userRepository.save(user);
+        //todo : when , theThrow , when thenReturn , do not work with void methods instead use doThrow().when();
+
+        //arrange
+        when(userRepository.save(any(User.class))).thenReturn(true);
+
+        //we have configured emailVerificationService mock object to throw EmailNotificationException when scheduleMailConfirmation is
+        //called
+        doThrow(EmailNotificationException.class)
+                .when(emailVerificationService)
+                .scheduleMailConfirmation(any(User.class));
+        //act and assert
+        assertThrows(UserServiceException.class, () -> userService.createUser(firstName, lastName, email, password, repeatPassword),
+                "Should have thrown UserServiceException instead");
+        //assert - scheduleMailConfirmation was called only one time
+        verify(emailVerificationService, times(1))
+                .scheduleMailConfirmation(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Schedule email confirmation is executed")
+    void testCreateUser_whenUserCreated_schedulesEmailConfirmation() {
+        //arrange - stub the save method
+        when(userRepository.save(any(User.class))).thenReturn(true);
+        //when you want mockito to call a real method
+        //todo : the stub object should not be an abstract class , mockito should call real implementation
+        doCallRealMethod().when(emailVerificationService).scheduleMailConfirmation(any(User.class));
+        //act - call method under test
+        userService.createUser(firstName, lastName, email, password, repeatPassword);
+        //assert
+        verify(emailVerificationService, times(1)).scheduleMailConfirmation(any(User.class));
     }
 }
